@@ -1,0 +1,142 @@
+---
+title: "Google APIs: Overview and Getting Started"
+sidebarTitle: "Overview"
+description: "An introduction to the Google developer APIs — learn how to access search, storage, and user data programmatically with REST and JSON."
+---
+
+The Google APIs give you programmatic access to Google's core services — search, cloud storage, user profiles, and more. All APIs use REST over HTTPS and return JSON responses. This page explains the basics of working with the API, including base URLs, versioning, and rate limits.
+
+## Base URL
+
+All API requests are made to:
+
+```
+https://www.googleapis.com/
+```
+
+Each service has its own path prefix. For example:
+
+| Service | Base path |
+|---|---|
+| Drive | `https://www.googleapis.com/drive/v3/` |
+| Gmail | `https://gmail.googleapis.com/gmail/v1/` |
+| Custom Search | `https://customsearch.googleapis.com/customsearch/v1/` |
+| People (profiles) | `https://people.googleapis.com/v1/` |
+
+## Authentication
+
+All API requests require authentication. Google supports two primary methods:
+
+- **API key** — for public data requests that do not require a user sign-in (e.g., Custom Search).
+- **OAuth 2.0** — for requests that access or modify user data (e.g., reading Gmail, uploading to Drive).
+
+See the [Authentication guide](/api/authentication) for full details on obtaining and using credentials.
+
+## Making your first request
+
+Here is an example using the Custom Search API with an API key:
+
+```bash
+curl "https://customsearch.googleapis.com/customsearch/v1?key=YOUR_API_KEY&cx=YOUR_SEARCH_ENGINE_ID&q=google+api"
+```
+
+And the equivalent in Python:
+
+```python api_request.py
+import requests
+
+api_key = "YOUR_API_KEY"
+search_engine_id = "YOUR_SEARCH_ENGINE_ID"
+query = "google api"
+
+response = requests.get(
+    "https://customsearch.googleapis.com/customsearch/v1",
+    params={
+        "key": api_key,
+        "cx": search_engine_id,
+        "q": query,
+    }
+)
+
+data = response.json()
+for item in data.get("items", []):
+    print(item["title"], item["link"])
+```
+
+## Request format
+
+- All endpoints accept standard HTTP methods: `GET`, `POST`, `PUT`, `PATCH`, `DELETE`.
+- For `POST` and `PUT` requests, send the body as JSON with the `Content-Type: application/json` header.
+- Pass OAuth 2.0 tokens in the `Authorization` header as a Bearer token.
+
+```bash
+curl -X POST \
+  "https://www.googleapis.com/drive/v3/files" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"name": "My Document", "mimeType": "application/vnd.google-apps.document"}'
+```
+
+## Response format
+
+All successful responses return HTTP `200 OK` with a JSON body. For list endpoints, results are paginated:
+
+```json
+{
+  "kind": "drive#fileList",
+  "nextPageToken": "abc123",
+  "files": [
+    {
+      "id": "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms",
+      "name": "My Document",
+      "mimeType": "application/vnd.google-apps.document"
+    }
+  ]
+}
+```
+
+Pass the `nextPageToken` value as the `pageToken` query parameter in your next request to retrieve the next page of results.
+
+## Rate limits
+
+API rate limits vary by service. Common defaults:
+
+| Limit type | Default |
+|---|---|
+| Requests per second per user | 10 |
+| Requests per day | 1,000 (free tier) |
+| Requests per 100 seconds | 1,000 |
+
+When you exceed a rate limit, the API returns `429 Too Many Requests`. Implement exponential backoff — wait 1 second, retry; if it fails again, wait 2 seconds, then 4 seconds, etc.
+
+## Error codes
+
+| HTTP status | Code | Meaning |
+|---|---|---|
+| 400 | `invalid_request` | Malformed request or missing required parameter |
+| 401 | `unauthorized` | Missing or invalid authentication credentials |
+| 403 | `forbidden` | Valid credentials but insufficient permissions |
+| 404 | `not_found` | Requested resource does not exist |
+| 429 | `rate_limit_exceeded` | Too many requests — apply exponential backoff |
+| 500 | `internal_error` | Unexpected server error — retry after a short delay |
+
+## SDKs and client libraries
+
+Google provides official client libraries to simplify API integration:
+
+<CodeGroup>
+```bash npm
+npm install googleapis
+```
+```bash pip
+pip install google-api-python-client google-auth-httplib2 google-auth-oauthlib
+```
+```bash maven
+<!-- Add to your pom.xml -->
+<dependency>
+  <groupId>com.google.api-client</groupId>
+  <artifactId>google-api-client</artifactId>
+  <version>2.2.0</version>
+</dependency>
+```
+</CodeGroup>

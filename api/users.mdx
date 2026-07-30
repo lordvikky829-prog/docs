@@ -1,0 +1,100 @@
+---
+title: "People API — User Profile Endpoints"
+sidebarTitle: "Users API"
+description: "GET /v1/people/me — retrieve the authenticated user's Google profile. Requires OAuth 2.0 with the profile scope."
+---
+
+The People API lets your application read the profile of the signed-in Google user. Use it to display the user's name, email, and photo in your app after they authenticate with Google Sign-In.
+
+## Get authenticated user profile
+
+```
+GET https://people.googleapis.com/v1/people/me
+```
+
+### Authentication
+
+Requires an OAuth 2.0 access token with at least the `profile` or `email` scope. See the [Authentication guide](/api/authentication) to obtain one.
+
+### Query parameters
+
+<ParamField query="personFields" type="string" required>
+  Comma-separated list of fields to return. Must specify at least one field. Common values:
+  - `names` — display name and structured name.
+  - `emailAddresses` — the user's email addresses.
+  - `photos` — profile photo URLs.
+  - `phoneNumbers` — phone numbers.
+  - `birthdays` — birthday.
+</ParamField>
+
+### Example request
+
+```bash
+curl "https://people.googleapis.com/v1/people/me?personFields=names,emailAddresses,photos" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+### Example response
+
+```json
+{
+  "resourceName": "people/107123456789",
+  "etag": "%EgMBAgk",
+  "names": [
+    {
+      "metadata": { "primary": true, "source": { "type": "ACCOUNT" } },
+      "displayName": "Jane Smith",
+      "givenName": "Jane",
+      "familyName": "Smith"
+    }
+  ],
+  "emailAddresses": [
+    {
+      "metadata": { "primary": true, "verified": true },
+      "value": "jane.smith@gmail.com"
+    }
+  ],
+  "photos": [
+    {
+      "metadata": { "primary": true },
+      "url": "https://lh3.googleusercontent.com/a/abcdefg",
+      "default": false
+    }
+  ]
+}
+```
+
+### Response fields
+
+<ResponseField name="resourceName" type="string">
+  Unique identifier for the person resource. Format: `people/{person_id}`.
+</ResponseField>
+
+<ResponseField name="names" type="array">
+  Array of name objects for the person.
+
+  <Expandable title="properties">
+    <ResponseField name="displayName" type="string">
+      The person's full display name.
+    </ResponseField>
+    <ResponseField name="givenName" type="string">
+      First name.
+    </ResponseField>
+    <ResponseField name="familyName" type="string">
+      Last name.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="emailAddresses" type="array">
+  Array of email address objects.
+
+  <Expandable title="properties">
+    <ResponseField name="value" type="string">
+      The email address string.
+    </ResponseField>
+    <ResponseField name="metadata.primary" type="boolean">
+      `true` if this is the primary email address for the account.
+    </ResponseField>
+  </Expandable>
+</ResponseField>

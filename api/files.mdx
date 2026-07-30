@@ -1,0 +1,128 @@
+---
+title: "Drive API — File Management Endpoints"
+sidebarTitle: "Files API"
+description: "Manage files in Google Drive with the REST API. List, upload, download, update, and delete files using OAuth 2.0 authentication."
+---
+
+The Google Drive API lets you programmatically manage files in a user's Drive — list contents, upload new files, update metadata, and delete items. All requests require OAuth 2.0 authentication with appropriate Drive scopes.
+
+## Base URL
+
+```
+https://www.googleapis.com/drive/v3/files
+```
+
+## List files
+
+```
+GET https://www.googleapis.com/drive/v3/files
+```
+
+### Query parameters
+
+<ParamField query="q" type="string">
+  Filter query string. Example: `mimeType='application/vnd.google-apps.folder'` to list only folders.
+</ParamField>
+
+<ParamField query="pageSize" type="integer">
+  Maximum number of files to return per page. Default `100`, maximum `1000`.
+</ParamField>
+
+<ParamField query="pageToken" type="string">
+  Token for the next page of results, obtained from a previous response's `nextPageToken`.
+</ParamField>
+
+<ParamField query="fields" type="string">
+  Partial response fields to include. Example: `files(id,name,mimeType)` to return only id, name, and type.
+</ParamField>
+
+### Example request
+
+```bash
+curl "https://www.googleapis.com/drive/v3/files?pageSize=10&fields=files(id,name,mimeType)" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+### Example response
+
+```json
+{
+  "kind": "drive#fileList",
+  "nextPageToken": "token_abc123",
+  "files": [
+    {
+      "id": "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74",
+      "name": "Project Plan",
+      "mimeType": "application/vnd.google-apps.spreadsheet"
+    },
+    {
+      "id": "1PzH8yKjq2dM9nXrTvWe3fAsBcDeFgHiJkL",
+      "name": "Report.pdf",
+      "mimeType": "application/pdf"
+    }
+  ]
+}
+```
+
+## Upload a file
+
+```
+POST https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart
+```
+
+Use `multipart` uploads to send file metadata and content in a single request (up to 5 MB). For larger files, use resumable uploads.
+
+### Example request
+
+```bash
+curl -X POST \
+  "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -F "metadata={name: 'report.pdf', mimeType: 'application/pdf'};type=application/json;charset=UTF-8" \
+  -F "file=@/path/to/report.pdf;type=application/pdf"
+```
+
+### Response
+
+Returns the created file resource:
+
+```json
+{
+  "kind": "drive#file",
+  "id": "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2",
+  "name": "report.pdf",
+  "mimeType": "application/pdf"
+}
+```
+
+## Delete a file
+
+```
+DELETE https://www.googleapis.com/drive/v3/files/{fileId}
+```
+
+<ParamField path="fileId" type="string" required>
+  The ID of the file to delete. Obtain the ID from the list files endpoint or the Drive URL.
+</ParamField>
+
+### Example request
+
+```bash
+curl -X DELETE \
+  "https://www.googleapis.com/drive/v3/files/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+A successful delete returns `204 No Content` with an empty body.
+
+<Warning>
+  Deleting a file moves it to the Drive Trash. It is permanently deleted after 30 days or when you empty the Trash. To immediately purge a file, add `?supportsAllDrives=true&enforceSingleParent=true` and send a second DELETE request with `/trash` appended.
+</Warning>
+
+## Required scopes
+
+| Operation | Minimum required scope |
+|---|---|
+| List files | `https://www.googleapis.com/auth/drive.readonly` |
+| Upload files | `https://www.googleapis.com/auth/drive.file` |
+| Delete any file | `https://www.googleapis.com/auth/drive` |

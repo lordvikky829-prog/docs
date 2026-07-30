@@ -1,30 +1,11 @@
 {
-  "$schema": "https://mintlify.com/docs.json",
+  "projectType": "saas",
+  "projectName": "Google",
+  "projectDescription": "A suite of online services and tools that help users search, communicate, collaborate, and get things done.",
   "theme": "almond",
-  "name": "Google",
-  "colors": {
-    "primary": "#ef7025",
-    "light": "#eec9bc",
-    "dark": "#4fa1ab"
-  },
-  "favicon": "/favicon.svg",
-  "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
-  },
-  "navbar": {
-    "links": [
-      {
-        "label": "Support",
-        "href": "https://support.google.com"
-      }
-    ],
-    "primary": {
-      "type": "button",
-      "label": "Sign In",
-      "href": "https://accounts.google.com"
-    }
-  },
+  "primaryColor": "#ef7025",
+  "lightColor": "#eec9bc",
+  "darkColor": "#4fa1ab",
   "navigation": {
     "tabs": [
       {
@@ -98,10 +79,20 @@
       }
     ]
   },
-  "footer": {
-    "socials": {
-      "x": "https://x.com/google",
-      "github": "https://github.com/google"
-    }
-  }
+  "keyFeatures": [
+    "Powerful search across the web and personal content",
+    "Cloud storage and file management",
+    "Real-time collaboration on documents, sheets, and slides",
+    "Email and calendar integration",
+    "Developer APIs for search, storage, and more",
+    "Cross-device sync and accessibility tools"
+  ],
+  "publicApiSurface": [
+    "GET /search — query the search index",
+    "GET /users/me — retrieve authenticated user profile",
+    "GET /files — list files in cloud storage",
+    "POST /files — upload a file",
+    "DELETE /files/{id} — delete a file",
+    "POST /webhooks — register a webhook endpoint"
+  ]
 }

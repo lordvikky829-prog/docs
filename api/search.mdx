@@ -1,0 +1,157 @@
+---
+title: "Custom Search API — Search Endpoints"
+sidebarTitle: "Search API"
+description: "GET /customsearch/v1 — query Google's Custom Search Engine programmatically. Accepts a search query and returns ranked web results in JSON."
+---
+
+The Custom Search API lets you query a Google Custom Search Engine from your application and receive ranked web results in JSON. You can search the entire web or scope results to a specific set of sites.
+
+## Endpoint
+
+```
+GET https://customsearch.googleapis.com/customsearch/v1
+```
+
+## Authentication
+
+This endpoint uses an **API key**. See the [Authentication guide](/api/authentication#api-keys) to create one.
+
+## Query parameters
+
+<ParamField query="key" type="string" required>
+  Your API key, obtained from Google Cloud Console.
+</ParamField>
+
+<ParamField query="cx" type="string" required>
+  The ID of the Custom Search Engine to query. Create one at [programmablesearchengine.google.com](https://programmablesearchengine.google.com).
+</ParamField>
+
+<ParamField query="q" type="string" required>
+  The search query string. URL-encode special characters.
+</ParamField>
+
+<ParamField query="num" type="integer">
+  Number of results to return. Valid values are 1–10. Default is `10`.
+</ParamField>
+
+<ParamField query="start" type="integer">
+  Index of the first result to return. Used for pagination. Default is `1`. Maximum is `91` (up to 100 total results across pages).
+</ParamField>
+
+<ParamField query="lr" type="string">
+  Restricts results to documents written in a specific language. Example: `lang_en` for English, `lang_fr` for French.
+</ParamField>
+
+<ParamField query="safe" type="string">
+  Safe Search setting. Valid values: `active` (filter explicit content), `off` (no filtering). Default is `off`.
+</ParamField>
+
+<ParamField query="searchType" type="string">
+  Set to `image` to search for images. Omit or leave empty to search for web pages.
+</ParamField>
+
+## Example request
+
+```bash
+curl "https://customsearch.googleapis.com/customsearch/v1
+  ?key=YOUR_API_KEY
+  &cx=YOUR_SEARCH_ENGINE_ID
+  &q=climate+change
+  &num=5"
+```
+
+## Example response
+
+```json
+{
+  "kind": "customsearch#search",
+  "url": {
+    "type": "application/json",
+    "template": "https://www.googleapis.com/customsearch/v1?q={searchTerms}&..."
+  },
+  "queries": {
+    "request": [
+      {
+        "title": "Google Custom Search - climate change",
+        "totalResults": "4360000000",
+        "searchTerms": "climate change",
+        "count": 5,
+        "startIndex": 1
+      }
+    ],
+    "nextPage": [
+      {
+        "startIndex": 6
+      }
+    ]
+  },
+  "items": [
+    {
+      "kind": "customsearch#result",
+      "title": "Climate Change: Causes, Effects, and Solutions",
+      "link": "https://example.com/climate-change",
+      "displayLink": "example.com",
+      "snippet": "Climate change refers to long-term shifts in temperatures and weather patterns...",
+      "pagemap": {}
+    }
+  ]
+}
+```
+
+## Response fields
+
+<ResponseField name="kind" type="string">
+  Always `customsearch#search`.
+</ResponseField>
+
+<ResponseField name="queries.request" type="array">
+  Metadata about the current request.
+
+  <Expandable title="properties">
+    <ResponseField name="totalResults" type="string">
+      Estimated total number of results (as a string).
+    </ResponseField>
+    <ResponseField name="count" type="integer">
+      Number of results returned in this response.
+    </ResponseField>
+    <ResponseField name="startIndex" type="integer">
+      Index of the first result in this response.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="items" type="array">
+  Array of search result objects.
+
+  <Expandable title="properties">
+    <ResponseField name="title" type="string">
+      Title of the search result page.
+    </ResponseField>
+    <ResponseField name="link" type="string">
+      Full URL of the result.
+    </ResponseField>
+    <ResponseField name="snippet" type="string">
+      Short excerpt from the result page.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Pagination
+
+To retrieve subsequent pages of results, increment `start` by the value of `num`:
+
+```bash
+# Page 1 (results 1–10)
+curl "...&q=climate+change&num=10&start=1"
+
+# Page 2 (results 11–20)
+curl "...&q=climate+change&num=10&start=11"
+```
+
+## Free tier limits
+
+| Limit | Default |
+|---|---|
+| Queries per day | 100 free, then $5 per 1,000 |
+| Max results per query | 10 |
+| Max total results | 100 (start ≤ 91) |

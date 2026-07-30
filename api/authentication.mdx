@@ -1,0 +1,145 @@
+---
+title: "Authenticate with the Google API"
+sidebarTitle: "Authentication"
+description: "Get an API key or OAuth 2.0 token and pass credentials correctly in Google API requests. Covers API keys, service accounts, and OAuth scopes."
+---
+
+Google APIs support three authentication methods depending on the type of data you are accessing. This page explains how to create credentials in Google Cloud Console, choose the right auth method, and send authenticated requests.
+
+## Create a project in Google Cloud Console
+
+All API credentials are managed in the Google Cloud Console.
+
+<Steps>
+  <Step title="Create a project">
+    1. Go to [console.cloud.google.com](https://console.cloud.google.com).
+    2. Click the project dropdown at the top and select **New Project**.
+    3. Enter a project name and click **Create**.
+  </Step>
+  <Step title="Enable an API">
+    1. In the left menu, click **APIs & Services → Library**.
+    2. Search for the API you want to use (e.g., "Drive API", "Gmail API").
+    3. Click the API name and then **Enable**.
+  </Step>
+  <Step title="Create credentials">
+    1. Click **APIs & Services → Credentials → Create Credentials**.
+    2. Choose your credential type (see options below).
+  </Step>
+</Steps>
+
+## API keys
+
+Use an API key for public-data APIs that do not require a user sign-in, such as the Custom Search API.
+
+**Create an API key:**
+1. In Google Cloud Console → Credentials → **Create Credentials → API key**.
+2. Copy the generated key.
+3. Optionally, click **Restrict key** to limit its use to specific APIs or IP addresses.
+
+**Use the API key in requests:**
+
+```bash
+curl "https://customsearch.googleapis.com/customsearch/v1?key=YOUR_API_KEY&cx=YOUR_CX&q=hello"
+```
+
+<Warning>
+  Never expose your API key in client-side JavaScript or public repositories. Restrict the key by API and HTTP referrer to prevent unauthorised use.
+</Warning>
+
+## OAuth 2.0
+
+Use OAuth 2.0 when your application needs to access or modify data on behalf of a user — for example, reading a user's Drive files or sending email from their Gmail account.
+
+**Create OAuth credentials:**
+1. Google Cloud Console → Credentials → **Create Credentials → OAuth client ID**.
+2. Choose the application type: **Web application**, **Desktop app**, or **Mobile**.
+3. Add authorised redirect URIs for your app.
+4. Copy the **Client ID** and **Client Secret**.
+
+**OAuth flow (web application):**
+
+```python oauth_flow.py
+from google_auth_oauthlib.flow import InstalledAppFlow
+from googleapiclient.discovery import build
+
+# Scopes define the permissions your app needs
+SCOPES = [
+    "https://www.googleapis.com/auth/drive.readonly",
+    "https://www.googleapis.com/auth/gmail.send",
+]
+
+flow = InstalledAppFlow.from_client_secrets_file(
+    "credentials.json",  # Downloaded from Cloud Console
+    SCOPES
+)
+creds = flow.run_local_server(port=0)
+
+# Use credentials to call the API
+drive_service = build("drive", "v3", credentials=creds)
+files = drive_service.files().list().execute()
+print(files)
+```
+
+### Common OAuth scopes
+
+| Scope | Access granted |
+|---|---|
+| `https://www.googleapis.com/auth/drive` | Full Drive access |
+| `https://www.googleapis.com/auth/drive.readonly` | Read-only Drive access |
+| `https://www.googleapis.com/auth/drive.file` | Access only files created by your app |
+| `https://www.googleapis.com/auth/gmail.send` | Send email on behalf of the user |
+| `https://www.googleapis.com/auth/gmail.readonly` | Read-only Gmail access |
+| `https://www.googleapis.com/auth/calendar` | Full Calendar access |
+| `profile email` | Read the user's basic profile and email |
+
+<Tip>
+  Request the narrowest scopes possible. Users are more likely to grant access, and your app is exposed to less risk if a token is compromised.
+</Tip>
+
+**Passing the access token:**
+
+```bash
+curl -X GET \
+  "https://www.googleapis.com/drive/v3/files" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+## Service accounts
+
+Service accounts are for server-to-server access where no user interaction is required.
+
+1. Google Cloud Console → Credentials → **Create Credentials → Service account**.
+2. Enter a name and description, then click **Create and continue**.
+3. Assign a role if needed (e.g., **Viewer**), then click **Done**.
+4. Click the service account, go to **Keys → Add Key → Create new key**, and download the JSON key file.
+
+```python service_account.py
+from google.oauth2 import service_account
+from googleapiclient.discovery import build
+
+SCOPES = ["https://www.googleapis.com/auth/drive"]
+SERVICE_ACCOUNT_FILE = "service-account-key.json"
+
+creds = service_account.Credentials.from_service_account_file(
+    SERVICE_ACCOUNT_FILE, scopes=SCOPES
+)
+service = build("drive", "v3", credentials=creds)
+```
+
+<Warning>
+  Store service account key files securely. Never commit them to version control. Use environment variables or a secrets manager to inject the key at runtime.
+</Warning>
+
+## Token refresh
+
+OAuth access tokens expire after 1 hour. The Google client libraries handle token refresh automatically using the refresh token obtained during the initial OAuth flow. If you are making raw HTTP requests, refresh the token manually:
+
+```bash
+curl -X POST "https://oauth2.googleapis.com/token" \
+  -d "client_id=YOUR_CLIENT_ID" \
+  -d "client_secret=YOUR_CLIENT_SECRET" \
+  -d "refresh_token=YOUR_REFRESH_TOKEN" \
+  -d "grant_type=refresh_token"
+```
+
+The response contains a new `access_token` valid for 1 hour.
