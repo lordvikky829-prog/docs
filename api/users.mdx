@@ -1,7 +1,7 @@
 ---
-title: "People API — User Profile Endpoints"
+title: "People API — Google User Profile Endpoint Reference"
 sidebarTitle: "Users API"
-description: "GET /v1/people/me — retrieve the authenticated user's Google profile. Requires OAuth 2.0 with the profile scope."
+description: "Retrieve the signed-in user's Google profile — name, email, and photo — using the People API with an OAuth 2.0 access token and the profile scope."
 ---
 
 The People API lets your application read the profile of the signed-in Google user. Use it to display the user's name, email, and photo in your app after they authenticate with Google Sign-In.
@@ -98,3 +98,25 @@ curl "https://people.googleapis.com/v1/people/me?personFields=names,emailAddress
     </ResponseField>
   </Expandable>
 </ResponseField>
+
+### Error handling
+
+The API returns standard HTTP status codes. Common errors:
+
+| Status | Error code | Meaning |
+|---|---|---|
+| `400` | `INVALID_ARGUMENT` | The `personFields` parameter is missing or contains an unrecognized field name. |
+| `401` | `UNAUTHENTICATED` | The access token is missing, expired, or invalid. Refresh the token and retry. |
+| `403` | `PERMISSION_DENIED` | The token does not include the required scope (`profile` or `email`). |
+
+Error responses follow this structure:
+
+```json
+{
+  "error": {
+    "code": 401,
+    "message": "Request is missing required authentication credential.",
+    "status": "UNAUTHENTICATED"
+  }
+}
+```

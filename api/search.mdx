@@ -1,7 +1,7 @@
 ---
-title: "Custom Search API — Search Endpoints"
+title: "Custom Search API — Web Query Endpoint Reference"
 sidebarTitle: "Search API"
-description: "GET /customsearch/v1 — query Google's Custom Search Engine programmatically. Accepts a search query and returns ranked web results in JSON."
+description: "Query a Google Custom Search Engine programmatically and receive ranked web results in JSON. Supports pagination, language filters, and image search."
 ---
 
 The Custom Search API lets you query a Google Custom Search Engine from your application and receive ranked web results in JSON. You can search the entire web or scope results to a specific set of sites.
@@ -146,6 +146,28 @@ curl "...&q=climate+change&num=10&start=1"
 
 # Page 2 (results 11–20)
 curl "...&q=climate+change&num=10&start=11"
+```
+
+## Error handling
+
+The API returns standard HTTP status codes. Common errors:
+
+| Status | Error code | Meaning |
+|---|---|---|
+| `400` | `badRequest` | A required parameter is missing or a parameter value is invalid. |
+| `403` | `forbidden` | The API key is invalid, the Custom Search Engine does not exist, or your daily quota has been exceeded. |
+| `429` | `rateLimitExceeded` | You have exceeded the per-second rate limit. Implement exponential back-off and retry. |
+
+Error responses follow this structure:
+
+```json
+{
+  "error": {
+    "code": 403,
+    "message": "The request is missing a valid API key.",
+    "status": "PERMISSION_DENIED"
+  }
+}
 ```
 
 ## Free tier limits

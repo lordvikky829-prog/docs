@@ -1,7 +1,7 @@
 ---
-title: "Drive API — File Management Endpoints"
+title: "Drive API — Manage Files with the Google Drive REST API"
 sidebarTitle: "Files API"
-description: "Manage files in Google Drive with the REST API. List, upload, download, update, and delete files using OAuth 2.0 authentication."
+description: "List, upload, and delete files in Google Drive using the Drive REST API. All operations require OAuth 2.0 authentication with the appropriate scopes."
 ---
 
 The Google Drive API lets you programmatically manage files in a user's Drive — list contents, upload new files, update metadata, and delete items. All requests require OAuth 2.0 authentication with appropriate Drive scopes.
@@ -116,8 +116,38 @@ curl -X DELETE \
 A successful delete returns `204 No Content` with an empty body.
 
 <Warning>
-  Deleting a file moves it to the Drive Trash. It is permanently deleted after 30 days or when you empty the Trash. To immediately purge a file, add `?supportsAllDrives=true&enforceSingleParent=true` and send a second DELETE request with `/trash` appended.
+  Deleting a file moves it to the Drive Trash. It is permanently deleted after 30 days or when the user empties the Trash. To empty the trash programmatically, call `DELETE https://www.googleapis.com/drive/v3/files/trash` with the `https://www.googleapis.com/auth/drive` scope.
 </Warning>
+
+## Error handling
+
+The API returns standard HTTP status codes. Common errors:
+
+| Status | Error code | Meaning |
+|---|---|---|
+| `400` | `badRequest` | A required parameter is missing or the request body is malformed. |
+| `401` | `authError` | The access token is missing, expired, or invalid. Refresh the token and retry. |
+| `403` | `forbidden` | The token lacks the required Drive scope, or the user does not have permission to access the file. |
+| `404` | `notFound` | The specified file ID does not exist or the user does not have access to it. |
+| `429` | `rateLimitExceeded` | Too many requests in a short period. Implement exponential back-off and retry. |
+
+Error responses follow this structure:
+
+```json
+{
+  "error": {
+    "code": 404,
+    "message": "File not found: 1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2",
+    "errors": [
+      {
+        "domain": "global",
+        "reason": "notFound",
+        "message": "File not found."
+      }
+    ]
+  }
+}
+```
 
 ## Required scopes
 

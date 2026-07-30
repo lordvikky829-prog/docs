@@ -120,6 +120,19 @@ When you exceed a rate limit, the API returns `429 Too Many Requests`. Implement
 | 429 | `rate_limit_exceeded` | Too many requests — apply exponential backoff |
 | 500 | `internal_error` | Unexpected server error — retry after a short delay |
 
+## Available endpoints
+
+The following endpoints make up the core Google API surface. Click any endpoint to view full parameter references, request/response schemas, and examples.
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | [`/customsearch/v1`](/api/search) | Query the search index |
+| `GET` | [`/v1/people/me`](/api/users) | Retrieve the authenticated user's profile |
+| `GET` | [`/drive/v3/files`](/api/files) | List files in cloud storage |
+| `POST` | [`/upload/drive/v3/files`](/api/files) | Upload a file to cloud storage |
+| `DELETE` | [`/drive/v3/files/{id}`](/api/files) | Delete a file by ID |
+| `POST` | [`/drive/v3/files/watch`](/api/webhooks) | Register a webhook (watch channel) |
+
 ## SDKs and client libraries
 
 Google provides official client libraries to simplify API integration:
